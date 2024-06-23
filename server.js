@@ -8,7 +8,16 @@ const cookieParser = require("cookie-parser")
 const MONGO_URL = process.env.MONGO_URL
 const userRouter = require("./Routes/userRoute")
 const auth = require("./Routes/auth");
+const videoRoute = require("./Routes/videoRoute")
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const path = require("path")
 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET,
+});
 
 const app = express();
 
@@ -43,7 +52,13 @@ app.use(passport.session())
 //Route
 app.use("/user", userRouter);
 app.use("/auth", auth);
+app.use("/video", videoRoute)
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 // connecting to the database & port
 (async() => {
