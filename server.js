@@ -4,20 +4,15 @@ const mongoose = require("mongoose")
 const session = require("express-session")
 const morgan = require("morgan");
 const passport = require("passport")
+const fileUpload = require("express-fileupload")
 const cookieParser = require("cookie-parser")
 const MONGO_URL = process.env.MONGO_URL
 const userRouter = require("./Routes/userRoute")
 const auth = require("./Routes/auth");
 const videoRoute = require("./Routes/videoRoute")
-const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const path = require("path")
 
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_KEY,
-  api_secret: process.env.CLOUD_SECRET,
-});
 
 const app = express();
 
@@ -28,7 +23,13 @@ require("./Config/passport")(passport);
 // body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(fileUpload());
  
+//This is the upload directory where the video is temporarily saved before uploading to cloudinary
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 
 //middleware
 app.use(morgan("dev"))

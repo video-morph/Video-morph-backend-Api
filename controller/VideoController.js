@@ -1,42 +1,73 @@
-const Video = require("../Models/videoModel");
-const cloudinary = require("cloudinary");
-const upload = require("../Config/multer");
+const Video = require("../models/videoModel");
+const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const path = require("path");
 
-exports.uploadVideo = (req, res) => {
-  upload(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ message: err.message });
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET,
+});
+
+
+exports.uploadVideo = async (req, res) => {
+  try {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).json({ msg: "No files were uploaded" });
     }
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+
+    const videoFile = req.files.video;
+
+    // Check for the type of file user can upload to clodinary
+    const filetypes = /mp4|avi|mkv|mov/;
+    const extname = filetypes.test(path.extname(videoFile.name).toLowerCase());
+    const mimetype = filetypes.test(videoFile.mimetype);
+
+    if (!extname || !mimetype) {
+      return res.status(400).json({ msg: "Error: Videos Only!" });
     }
 
-    try {
-      const filePath = path.join(__dirname, "..", req.file.path);
+    const uploadPath = path.join(__dirname, "../uploads", videoFile.name);
 
-      const result = await cloudinary.uploader.upload(filePath, {
-        resource_type: "video",
-        folder: "video",
-      });
-      
-      // Remove the file after upload
-      fs.unlinkSync(filePath); 
+    videoFile.mv(uploadPath, async (err) => {
+      if (err) {
+        return res.status(500).json({ msg: err.message });
+      };
 
-      const upload = new Video({
-        name: req.file.originalname,
-        url: result.url,
-        cloudinary_id: result.public_id,
-        description: req.body.description,
-      });
+      try {
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(uploadPath, {
+          resource_type: "video",
+          folder: "video",
+        });
 
-      await upload.save();
+        
 
-      return res.status(200).json({ message: "Video uploaded successfully" });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ message: err.message });
-    }
-  });
+        // Save video details to database
+        const upload = new Video({
+          name: videoFile.name,
+          url: result.url,
+          cloudinary_id: result.public_id,
+          description: req.body.description,
+        });
+
+        await upload.save();
+
+        // Delete the file from the local server
+        fs.unlinkSync(uploadPath);
+
+        return res
+          .status(200)
+          .json({ message: "Video uploaded successfully", video: upload });
+      } catch (uploadErr) {
+        // Clean up file if Cloudinary upload fails
+        fs.unlinkSync(uploadPath);
+        return res
+          .status(500)
+          .json({ msg: uploadErr.message });
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ msg: err.message });
+  }
 };
