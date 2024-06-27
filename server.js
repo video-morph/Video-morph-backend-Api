@@ -4,6 +4,7 @@ const mongoose = require("mongoose")
 const session = require("express-session")
 const morgan = require("morgan");
 const passport = require("passport")
+const cors = require("cors")
 const fileUpload = require("express-fileupload")
 const cookieParser = require("cookie-parser")
 const MONGO_URL = process.env.MONGO_URL
@@ -24,6 +25,7 @@ require("./Config/passport")(passport);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(fileUpload());
+app.use(cors());
  
 //This is the upload directory where the video is temporarily saved before uploading to cloudinary
 const uploadsDir = path.join(__dirname, 'uploads');
