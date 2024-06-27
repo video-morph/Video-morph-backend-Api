@@ -54,7 +54,7 @@ exports.register = async (req, res) => {
       });
       await newUser.save();
       // create a verification link
-      const verificationLink = `http://localhost:6000/verify?token=${verificationToken}`;
+      const verificationLink = `https://video-morph.onrender.com/verify?token=${verificationToken}`;
 
       //send verification email
       const mailOptions = {
@@ -173,7 +173,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     //reset link
-    resetLink = `http://localhost:6000/reset-password?token=${resetToken}&email=${email}`;
+    resetLink = `https://video-morph.onrender.com/reset-password?token=${resetToken}&email=${email}`;
 
     //send password reset mail
     const mailOptions = {
