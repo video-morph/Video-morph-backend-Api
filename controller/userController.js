@@ -57,7 +57,7 @@ exports.register = async (req, res) => {
 
       //send verification email
       const mailOptions = {
-        from: "yisarasaq2018@gmail.com",
+        from: "Techstarta",
         to: email,
         subject: "Email verification",
         text: `verificationLink: ${verificationLink}`,
@@ -116,7 +116,7 @@ exports.login = async (req, res) => {
 
     //send token to the user's email
     const mailOptions = {
-      from: "yisarasaq2018@gmail.com",
+      from: "Techstarta",
       to: email,
       subject: "Two factor authentication token",
       text: `Your two-factor authentication token is: ${newSecret}`
@@ -176,7 +176,7 @@ exports.forgotPassword = async (req, res) => {
 
     //send password reset mail
     const mailOptions = {
-      from: "yisarasaq2018@gmail.com",
+      from: "Techstarta",
       to: email,
       subject: "Password reset",
       text: `Reset link: ${resetLink}`,
