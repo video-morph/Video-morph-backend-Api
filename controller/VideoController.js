@@ -1,4 +1,4 @@
-const Video = require("../models/videoModel");
+const Video = require("../Models/videoModel");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const path = require("path");
