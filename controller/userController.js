@@ -25,6 +25,7 @@ exports.register = async (req, res) => {
         .status(401)
         .json({ message: "Email has already been registered" });
     };
+    const secret = Math.floor(100000 + Math.random() * 900000);
 
     //create a verification token
     const verificationToken =  jwt.sign(
