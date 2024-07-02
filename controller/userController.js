@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 
+
 //create a transporter
 let transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -24,16 +25,17 @@ exports.register = async (req, res) => {
       return res
         .status(401)
         .json({ message: "Email has already been registered" });
-    };
+    }
     const secret = Math.floor(100000 + Math.random() * 900000);
 
     //create a verification token
-    const verificationToken =  jwt.sign(
+    const verificationToken = jwt.sign(
       { firstName, lastName, email, password },
       process.env.JWT_SECRET,
-      { expiresIn: "20m" } );
-    
-      //hash the password
+      { expiresIn: "20m" }
+    );
+
+    //hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     if (password.length < 8) {
       return res
@@ -69,16 +71,15 @@ exports.register = async (req, res) => {
         .json({ message: "Verification email sent.", verificationToken });
     }
   } catch (err) {
-    return res.status(500).json({message: err.message});
-  } 
+    return res.status(500).json({ message: err.message });
+  }
 };
-
 
 //Email verification route
 exports.accountVerification = async (req, res) => {
   const { verificationToken } = req.body;
   try {
-    const user = await User.findOne({verificationToken});
+    const user = await User.findOne({ verificationToken });
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -92,7 +93,6 @@ exports.accountVerification = async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 };
-
 
 //Login route
 exports.login = async (req, res) => {
@@ -112,7 +112,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const newSecret = Math.floor(100000 + Math.random() * 900000)
+    const newSecret = Math.floor(100000 + Math.random() * 900000);
     await User.findOneAndUpdate({ secret: newSecret });
 
     //send token to the user's email
@@ -120,18 +120,23 @@ exports.login = async (req, res) => {
       from: "Techstarta",
       to: email,
       subject: "Two factor authentication token",
-      text: `Your two-factor authentication token is: ${newSecret}`
+      text: `Your two-factor authentication token is: ${newSecret}`,
     };
-     
-     //send the mail
-      await transporter.sendMail(mailOptions)
 
-     return res.status(200).json({ message: "A token has been sent to you mail", newSecret });
-
+    //send the mail
+    await transporter.sendMail(mailOptions);
+    // Generate JWT token
+    const payload = { id: user._id, email: user.email };
+    const token = jwt.sign(payload, process.env.JWT_TOKEN, {
+      expiresIn: "10h",
+    });
+    return res
+      .status(200)
+      .json({ message: "A token has been sent to you mail", newSecret, token });
   } catch (err) {
     return res.status(500).json({ message: err.message });
-  };
-};   
+  }
+};
 
 // two step verification route
 exports.verify = async (req, res) => {
@@ -141,23 +146,26 @@ exports.verify = async (req, res) => {
     const user = await User.findOne({ secret });
 
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
-    };
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
 
     //Update user verification status
     user.secret = undefined;
     user.twoFactorVerified = true;
     user.twoFactorVerified = undefined;
     await user.save();
-    return res
-      .status(200)
-      .json({ message: "Login successful" });
+    // Generate JWT token
+    const payload = { id: user._id, email: user.email };
+    const token = jwt.sign(payload, process.env.JWT_TOKEN, {
+      expiresIn: "10h",
+    });
+    return res.status(200).json({ message: "Login successful", token });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
 };
 
-//forgot password 
+//forgot password
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
@@ -218,8 +226,7 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-
-exports.logout = async(req, res) => {
+exports.logout = async (req, res) => {
   res.clearCookie("access_token");
-  res.status(200).json({message: "Logout successful"})
-}
+  res.status(200).json({ message: "Logout successful" });
+};
