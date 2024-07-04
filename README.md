@@ -119,23 +119,53 @@ This tech stack ensures that the Video-Morph Backend API is robust, scalable, an
 ### EndPoints
 
 -Signup Route
-https://video-morph.onrender.com/user/signup
+POST: https://video-morph.onrender.com/user/signup
+{
+   firstName
+   lastName
+   email
+   password
+   password2
+
+}
 
 - Verify Account
-https://video-morph.onrender.com/user/verify
-
+POST: https://video-morph.onrender.com/user/verify
+{
+   verificationToken
+}
 - Login 
-https://video-morph.onrender.com/user.login
+POST: https://video-morph.onrender.com/user/login
+{
+   email:
+   password
+}
 
--Two Set Authentication
-https://video-morph.onrender.com/user/verify-token
+-Two Factor Authentication
+POST: https://video-morph.onrender.com/user/verify-token
+{
+   secret
+}
 
 -Forgot Password
-https://video-morph.onrender.com/user/forgot-password
+POST: https://video-morph.onrender.com/user/forgot-password
+{
+   email
+}
 
 -Reset Password
-https://video-morph.onrender.com/user/reset-password
+POST: https://video-morph.onrender.com/user/reset-password
+{
+   email,
+   resetToken, 
+   newPassword
+}
 
 -Upload Video
-https://video-morph.onrender.com/video/upload
+POST: https://video-morph.onrender.com/video/upload
+{
+   name
+   video
+   description
+}
 
