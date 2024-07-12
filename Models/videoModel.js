@@ -15,6 +15,9 @@ const videoSchema = new mongoose.Schema(
     },
     description: {
       type: String
+    },
+    transcodedVideos: {
+      type: String
     }
   },
   { timestamp: true }

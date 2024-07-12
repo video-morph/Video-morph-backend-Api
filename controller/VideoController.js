@@ -9,7 +9,6 @@ cloudinary.config({
   api_secret: process.env.CLOUD_SECRET,
 });
 
-
 exports.uploadVideo = async (req, res) => {
   try {
     if (!req.files || Object.keys(req.files).length === 0) {
@@ -32,7 +31,7 @@ exports.uploadVideo = async (req, res) => {
     videoFile.mv(uploadPath, async (err) => {
       if (err) {
         return res.status(500).json({ msg: err.message });
-      };
+      }
 
       try {
         // Upload to Cloudinary
@@ -41,7 +40,34 @@ exports.uploadVideo = async (req, res) => {
           folder: "video",
         });
 
-        
+        // This function is to transcode a video to different formats and resolutions
+        const transcodedFormats = [
+          {
+            format: "mp4",
+            transformation: { width: 640, height: 360, crop: "limit" },
+          },
+          {
+            format: "webm",
+            transformation: { width: 1280, height: 720, crop: "limit" },
+          },
+        ];
+
+        const transcodedVideos = await Promise.all(
+          transcodedFormats.map(async (format) => {
+            const transcodedResult = await cloudinary.uploader.upload(
+              result.secure_url,
+              {
+                resource_type: "video",
+                format: format.format,
+                transformation: format.transformation,
+              }
+            );
+            return {
+              format: format.format,
+              url: transcodedResult.secure_url,
+            };
+          })
+        );
 
         // Save video details to database
         const upload = new Video({
@@ -49,6 +75,7 @@ exports.uploadVideo = async (req, res) => {
           url: result.url,
           cloudinary_id: result.public_id,
           description: req.body.description,
+          transcoded_videos: transcodedVideos, // Save the transcoded video URLs
         });
 
         await upload.save();
@@ -62,9 +89,7 @@ exports.uploadVideo = async (req, res) => {
       } catch (uploadErr) {
         // Clean up file if Cloudinary upload fails
         fs.unlinkSync(uploadPath);
-        return res
-          .status(500)
-          .json({ msg: uploadErr.message });
+        return res.status(500).json({ msg: uploadErr.message });
       }
     });
   } catch (err) {
