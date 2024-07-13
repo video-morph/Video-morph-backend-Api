@@ -1,171 +1,311 @@
-# Video-Morph Backend API
+Backend API Documentation
+Overview
+This backend application provides user authentication, video upload, and video transcoding functionalities. It is built using Node.js, Express, Mongoose, and Passport.js with Google OAuth 2.0 for authentication. The videos are uploaded to Cloudinary, and user data is stored in a MongoDB database.
 
-### OVERVIEW
+Project Structure
+bash
+Copy code
+.
+├── Config
+│   └── passport.js
+├── Controllers
+│   ├── userController.js
+│   └── videoController.js
+├── Middleware
+│   └── loginMiddleware.js
+├── Models
+│   ├── userModel.js
+│   └── videoModel.js
+├── Routes
+│   ├── auth.js
+│   ├── userRoute.js
+│   └── videoRoute.js
+├── server.js
+├── .env
+├── package.json
+└── README.md
+Routes
+User Routes
+POST /user/signup
+Registers a new user.
 
-The Video-Morph Backend API is a Node.js application designed for efficient video management. It allows users to upload videos, transcode them using Cloudinary, and manage video details stored in a MongoDB database. The API also supports authentication through Google OAuth 2.0 and a local authentication, ensuring secure access and user management.
-
-This backend service is built with Express.js, providing a scalable and efficient way to handle video files and related operations.
-
-Key functionalities of the Video-Morph Backend API include:
-
-Video Upload: Users can upload video files to the server.
-Transcoding: Uploaded videos are transcoded using Cloudinary to ensure compatibility and optimal delivery.
-Data Management: Video details, including name, URL, Cloudinary ID, and description, are stored in MongoDB.
-Authentication: Secure user authentication is handled via Google OAuth 2.0 and a local authentication.
-Error Handling: The API includes comprehensive error handling to manage various error scenarios effectively.
-This project is ideal for applications that require reliable video upload, transcoding, and management capabilities, such as video sharing platforms, educational content providers, and media management systems.
-
-
-### Features
-
-The Video-Morph Backend API boasts a range of features designed to streamline video management and ensure a seamless user experience:
-
-1. **Video Upload**:
-   - Users can upload video files in various formats (e.g., mp4, avi, mkv, mov) to the server.
-   - Uploads are handled using Express File Upload, ensuring efficient file handling.
-
-2. **Video Transcoding**:
-   - Uploaded videos are automatically transcoded using Cloudinary to ensure they are in a compatible format and optimized for web delivery.
-   - Transcoding parameters can be customized for specific needs.
-
-3. **Cloudinary Integration**:
-   - Direct integration with Cloudinary for storing and managing videos.
-   - Access to Cloudinary’s powerful media management features.
-
-4. **MongoDB Integration**:
-   - Video details (name, URL, Cloudinary ID, and description) are stored in a MongoDB database for easy retrieval and management.
-   - Mongoose is used for schema-based data validation and interaction with MongoDB.
-
-5. **Google OAuth 2.0 Authentication**:
-   - Secure authentication and authorization using Google OAuth 2.0.
-   - User sessions are managed with express-session and passport.js, ensuring secure and persistent user sessions.
-
-6. **Error Handling**:
-   - Comprehensive error handling mechanisms ensure that users receive meaningful error messages and status codes.
-   - Graceful handling of common issues, such as invalid file types, upload failures, and database errors.
-
-7. **Scalability**:
-   - Built with Express.js, allowing the application to handle a not mpore than 100mb video of requests efficiently.
-   - Designed to be easily scalable for growing user bases and increasing video upload demands.
-
-8. **Middleware**:
-   - Utilizes middleware for logging (morgan), parsing (express.json, express.urlencoded), and session management (express-session).
-   - Custom middleware can be easily added for additional functionality.
-
-9. **Security**:
-   - Sessions are secured with a secret key, and sensitive information is handled securely.
-   - Cookies are parsed and managed securely with cookie-parser.
-
-10. **Deployment Ready**:
-    - The application is designed to be easily deployed on platforms like Render, with environment variables for configuration.
-    - Detailed setup instructions ensure smooth deployment and configuration.
-
-These features make the Video-Morph Backend API a powerful solution for applications that require robust video upload, transcoding, and management capabilities.
-
-### Tech Stack
-
-The Video-Morph Backend API leverages a powerful and modern tech stack to provide efficient, scalable, and secure video management services. Here’s a breakdown of the technologies used:
-
-1. **Node.js**:
-   - JavaScript runtime built on Chrome's V8 JavaScript engine.
-   - Used for building fast and scalable server-side applications.
-
-2. **Express.js**:
-   - Minimal and flexible Node.js web application framework.
-   - Provides a robust set of features for web and mobile applications.
-   - Handles routing, middleware, and HTTP utilities.
-
-3. **MongoDB**:
-   - NoSQL database for storing video metadata.
-   - Provides high performance, high availability, and easy scalability.
-
-4. **Mongoose**:
-   - Elegant MongoDB object modeling for Node.js.
-   - Manages relationships between data and provides schema validation.
-
-5. **Cloudinary**:
-   - Cloud-based media management service.
-   - Handles video transcoding, storage, and delivery.
-   - Provides powerful media transformation and optimization features.
-
-6. **Passport.js**:
-   - Middleware for authentication in Node.js.
-   - Provides various authentication strategies, including Google OAuth 2.0.
-   - Used for securing user authentication and managing sessions.
-
-7. **Express File Upload**:
-   - Middleware for handling file uploads.
-   - Simplifies the process of handling multipart/form-data.
-
-8. **Morgan**:
-   - HTTP request logger middleware for Node.js.
-   - Used for logging requests in the application for monitoring and debugging.
-
-9. **Express-Session**:
-   - Middleware for managing user sessions.
-   - Stores session data on the server, allowing for session persistence across requests.
-
-10. **Cookie-Parser**:
-    - Middleware for parsing cookies attached to client requests.
-    - Provides an easy way to access cookies in the application.
-
-11. **dotenv**:
-    - Module for loading environment variables from a `.env` file into `process.env`.
-    - Used for managing configuration settings and sensitive information securely.
-
-This tech stack ensures that the Video-Morph Backend API is robust, scalable, and easy to maintain. The combination of these technologies provides a solid foundation for building a high-performance video management system.
-
-
-### EndPoints
-
--Signup Route
-POST: https://video-morph.onrender.com/user/signup
+Request Body:
+json
+Copy code
 {
-   firstName
-   lastName
-   email
-   password
-   password2
-
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "password2": "password123"
 }
-
-- Verify Account
-POST: https://video-morph.onrender.com/user/verify
+Response:
+json
+Copy code
 {
-   verificationToken
+  "message": "Verification email sent.",
+  "verificationToken": "token"
 }
-- Login 
-POST: https://video-morph.onrender.com/user/login
-{
-   email:
-   password
-}
+POST /user/verify
+Verifies a user's email.
 
--Two Factor Authentication
-POST: https://video-morph.onrender.com/user/verify-token
+Request Body:
+json
+Copy code
 {
-   secret
+  "verificationToken": "token"
 }
-
--Forgot Password
-POST: https://video-morph.onrender.com/user/forgot-password
+Response:
+json
+Copy code
 {
-   email
+  "message": "Email verified successfully"
 }
+POST /user/login
+Logs in a user.
 
--Reset Password
-POST: https://video-morph.onrender.com/user/reset-password
+Request Body:
+json
+Copy code
 {
-   email,
-   resetToken, 
-   newPassword
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "secret": "123456"
 }
-
--Upload Video
-POST: https://video-morph.onrender.com/video/upload
+Response:
+json
+Copy code
 {
-   name
-   video
-   description
+  "message": "A token has been sent to your mail",
+  "newSecret": "654321",
+  "token": "jwt_token"
 }
+POST /user/verify-token
+Verifies the two-factor authentication token.
 
+Request Body:
+json
+Copy code
+{
+  "secret": "654321"
+}
+Response:
+json
+Copy code
+{
+  "message": "Login successful",
+  "token": "jwt_token"
+}
+POST /user/forgot-password
+Sends a password reset link to the user's email.
+
+Request Body:
+json
+Copy code
+{
+  "email": "john.doe@example.com"
+}
+Response:
+json
+Copy code
+{
+  "message": "Password reset link sent",
+  "resetToken": "token"
+}
+POST /user/reset-password
+Resets the user's password.
+
+Request Body:
+json
+Copy code
+{
+  "email": "john.doe@example.com",
+  "resetToken": "token",
+  "newPassword": "newpassword123"
+}
+Response:
+json
+Copy code
+{
+  "message": "Password reset successful"
+}
+GET /user/logout
+Logs out the user.
+
+Response:
+json
+Copy code
+{
+  "message": "Logout successful"
+}
+Video Routes
+POST /video/upload
+Uploads a video and transcodes it.
+
+Request Body:
+video: The video file to be uploaded (multipart/form-data)
+description: Description of the video (optional)
+Response:
+json
+Copy code
+{
+  "message": "Video uploaded successfully",
+  "video": {
+    "name": "video_name.mp4",
+    "url": "https://cloudinary.com/video_url",
+    "cloudinary_id": "cloudinary_id",
+    "description": "Video description",
+    "transcoded_videos": [
+      {
+        "format": "mp4",
+        "url": "https://cloudinary.com/video_url.mp4"
+      },
+      {
+        "format": "webm",
+        "url": "https://cloudinary.com/video_url.webm"
+      }
+    ]
+  }
+}
+Auth Routes
+GET /auth/google
+Initiates Google OAuth 2.0 authentication.
+
+GET /auth/google/callback
+Handles Google OAuth 2.0 callback and logs in the user.
+
+Response:
+json
+Copy code
+{
+  "message": "success"
+}
+GET /auth/logout
+Logs out the user.
+
+Models
+User Model
+javascript
+Copy code
+const userSchema = new mongoose.Schema({
+  googleId: String,
+  displayName: String,
+  lastName: { type: String, required: true },
+  firstName: { type: String, required: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
+  isVerified: { type: Boolean, default: false },
+  verificationToken: String,
+  resetToken: String,
+  resetTokenExpiration: Date,
+  secret: { type: Number, default: undefined },
+  password: { type: String, required: true },
+  twoFactorVerified: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+Video Model
+javascript
+Copy code
+const videoSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  url: { type: String, required: true },
+  cloudinary_id: { type: String, required: true },
+  description: String,
+  transcodedVideos: String
+}, { timestamp: true });
+Middleware
+requireAuth Middleware
+Ensures that the user is authenticated before allowing access to protected routes.
+
+javascript
+Copy code
+const requireAuth = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+};
+Controllers
+User Controller
+Handles user registration, email verification, login, two-factor authentication, password reset, and logout functionalities.
+
+Video Controller
+Handles video upload, transcoding, and storage in Cloudinary.
+
+Passport Configuration
+Google OAuth 2.0 Strategy
+Handles Google OAuth 2.0 authentication.
+
+javascript
+Copy code
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    // Logic to handle user authentication with Google
+  }
+));
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser((id, done) => User.findById(id, (err, user) => done(err, user)));
+Server Setup
+server.js
+Sets up the Express server, middleware, routes, and database connection.
+
+javascript
+Copy code
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const morgan = require("morgan");
+const passport = require("passport");
+const cors = require("cors");
+const fileUpload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
+
+const userRouter = require("./Routes/userRoute");
+const authRouter = require("./Routes/auth");
+const videoRouter = require("./Routes/videoRoute");
+
+const app = express();
+
+// Passport configuration
+require("./Config/passport")(passport);
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(fileUpload());
+app.use(cors());
+app.use(morgan("dev"));
+app.use(cookieParser());
+app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Routes
+app.use("/user", userRouter);
+app.use("/auth", authRouter);
+app.use("/video", videoRouter);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+// Database connection and server start
+(async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    console.log(`Successfully connected to the database`);
+    const port = process.env.PORT;
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  } catch (err) {
+    console.error("Error connecting to the database");
+  }
+})();
