@@ -1,0 +1,243 @@
+openapi: 3.0.0
+info:
+  title: Video Transcoding and Service Rendering API
+  description: API documentation for the Video Transcoding and Service Rendering platform.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /video/upload:
+    post:
+      summary: Upload a video
+      description: Upload a video file to the server, transcode it, and save the details to the database.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+                  description: The video file to upload.
+                description:
+                  type: string
+                  description: The description of the video.
+      responses:
+        '200':
+          description: Video uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+
+  /user/signup:
+    post:
+      summary: User registration
+      description: Registers a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUser'
+      responses:
+        '200':
+          description: Verification email sent
+        '401':
+          description: Email has already been registered
+        '500':
+          description: Internal server error
+
+  /user/verify:
+    post:
+      summary: Account verification
+      description: Verify the user's email using the verification token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verificationToken:
+                  type: string
+                  description: The verification token sent to the user's email
+      responses:
+        '200':
+          description: Email verified successfully
+        '401':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /user/verify-token:
+    post:
+      summary: Verify two-step authentication token
+      description: Verify the user's two-step authentication token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                secret:
+                  type: string
+                  description: The two-step authentication token sent to the user's email
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid or expired token
+        '500':
+          description: Internal server error
+
+  /user/forgot-password:
+    post:
+      summary: Forgot password
+      description: Send a password reset link to the user's email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The user's email
+      responses:
+        '200':
+          description: Password reset link sent
+        '400':
+          description: User not found
+        '500':
+          description: Internal server error
+
+  /user/reset-password:
+    post:
+      summary: Reset password
+      description: Reset the user's password using the reset token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The user's email
+                resetToken:
+                  type: string
+                  description: The password reset token
+                newPassword:
+                  type: string
+                  description: The new password
+      responses:
+        '200':
+          description: Password reset successful
+        '401':
+          description: Invalid or expired reset token
+        '500':
+          description: Internal server error
+
+  /user/login:
+    post:
+      summary: User login
+      description: Log in a user and send a two-step authentication token to their email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+      responses:
+        '200':
+          description: A token has been sent to your email
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+
+  /user/logout:
+    get:
+      summary: User logout
+      description: Log out the user and clear the access token cookie
+      responses:
+        '200':
+          description: Logout successful
+        '500':
+          description: Internal server error
+
+  /auth/google:
+    get:
+      summary: Authenticate with Google
+      description: Authenticate the user using Google OAuth 2.0
+      responses:
+        '200':
+          description: Redirect to Google OAuth 2.0 login page
+
+  /auth/google/callback:
+    get:
+      summary: Google OAuth callback
+      description: Google OAuth callback URL
+      responses:
+        '200':
+          description: Success
+        '500':
+          description: Internal server error
+
+  /auth/logout:
+    get:
+      summary: Logout user
+      description: Logout the user authenticated with Google OAuth
+      responses:
+        '200':
+          description: Logout successful
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    RegisterUser:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        password2:
+          type: string
+    LoginUser:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    Video:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        cloudinary_id:
+          type: string
+        description:
+          type: string
+        transcodedVideos:
+          type: string
