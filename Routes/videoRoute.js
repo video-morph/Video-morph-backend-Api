@@ -5,7 +5,7 @@ const { requireAuth } = require("../Middleware/loginMiddleware")
 
 const router = express.Router();
 
-router.post("/upload", requireAuth, uploadVideo);
+router.post("/upload", uploadVideo);
 
 module.exports = router;
 
